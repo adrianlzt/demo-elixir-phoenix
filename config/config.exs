@@ -19,12 +19,38 @@ config :demo_elixir_phoenix, DemoElixirPhoenixWeb.Endpoint,
   live_view: [signing_salt: "DWxOrTvj"]
 
 # Configures Elixir's Logger
-config :logger, :console,
-  format: "$time $metadata[$level] $message\n",
-  metadata: [:request_id]
+#config :logger, :console,
+#  format: "$time $metadata[$level] $message\n",
+#  metadata: [:request_id]
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
+
+# Necessary to tell OpenTelemetry what repository to report traces for
+config :geometrics, :ecto_prefix, [:demo_elixir_phoenix, :repo]
+
+# Configuring a custom logger Geometrics.OpenTelemetry.Logger to help export process crashes to OpenTelemetry, which aren't reported by default
+config :logger,
+       backends: [
+         :console,
+         Geometrics.OpenTelemetry.Logger
+       ]
+
+# The service name will show up in each span in your metrics service (i.e. Honeycomb)
+config :opentelemetry, :resource,
+       service: [
+         name: "demo elixir phoenix"
+       ]
+
+config :opentelemetry,
+       processors: [
+         otel_batch_processor: %{
+           exporter: {
+             :opentelemetry_exporter,
+             %{endpoints: [{:http, '0.0.0.0', 55_681, []}]}
+           }
+         }
+       ]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

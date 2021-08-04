@@ -7,6 +7,7 @@ defmodule DemoElixirPhoenix.Application do
 
   def start(_type, _args) do
     children = [
+      Geometrics.OpenTelemetry.Handler,
       # Start the Ecto repository
       DemoElixirPhoenix.Repo,
       # Start the Telemetry supervisor
